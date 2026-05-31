@@ -4,84 +4,83 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+/* ---------------- THEMES ---------------- */
+
 const themes = [
-  {
-    bg: "#1e3a8a", // deep blue
-    glow: "rgba(147, 197, 253, 0.8)",
-  },
-  {
-    bg: "#065f46", // green
-    glow: "rgba(110, 231, 183, 0.8)",
-  },
-  {
-    bg: "#7c2d12", // dark orange/brown
-    glow: "rgba(251, 146, 60, 0.8)",
-  },
-  {
-    bg: "#4c1d95", // purple
-    glow: "rgba(216, 180, 254, 0.8)",
-  },
-  {
-    bg: "#0f172a", // almost black blue
-    glow: "rgba(56, 189, 248, 0.8)",
-  },
-  {
-    bg: "#831843", // pink/magenta
-    glow: "rgba(244, 114, 182, 0.8)",
-  },
-  {
-    bg: "#164e63", // teal
-    glow: "rgba(94, 234, 212, 0.8)",
-  },
-  {
-    bg: "#3f3f46", // gray
-    glow: "rgba(212, 212, 216, 0.8)",
-  },
-  {
-    bg: "#b91c1c", // red
-    glow: "rgba(248, 113, 113, 0.8)",
-  },
-  {
-    bg: "#92400e", // warm yellow/brown
-    glow: "rgba(253, 224, 71, 0.8)",
-  },
+  { bg: "#1e3a8a" },
+  { bg: "#065f46" },
+  { bg: "#7c2d12" },
+  { bg: "#4c1d95" },
+  { bg: "#0f172a" },
+  { bg: "#831843" },
+  { bg: "#164e63" },
+  { bg: "#3f3f46" },
+  { bg: "#b91c1c" },
+  { bg: "#92400e" },
 ];
 
 let currentThemeIndex = 0;
 let theme = themes[currentThemeIndex];
+
+/* ---------------- SETTINGS ---------------- */
+
+const settings = {
+  cellSize: 12,
+  effectRadius: 60,
+};
+
+/* ---------------- STATE ---------------- */
+
+let mouseX = 0;
+let mouseY = 0;
+
+/* ---------------- INPUT ---------------- */
+
+canvas.addEventListener("pointermove", (event) => {
+  mouseX = event.clientX;
+  mouseY = event.clientY;
+});
+
+/* ---------------- BACKGROUND ---------------- */
 
 function drawBackground() {
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-const gridSize = 20;
+/* ---------------- GRID EFFECT ---------------- */
 
-canvas.addEventListener("pointermove", (event) => {
-  const x = event.clientX;
-  const y = event.clientY;
+function drawGrid() {
+  const cellSize = settings.cellSize;
 
-  const radius = 50;
+  for (let x = 0; x < canvas.width; x += cellSize) {
+    for (let y = 0; y < canvas.height; y += cellSize) {
+      const dx = x - mouseX;
+      const dy = y - mouseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
 
-  drawBackground();
+      const intensity = Math.max(0, 1 - dist / settings.effectRadius);
 
-  for (let x = 0; x < canvas.width; x += gridSize) {
-    for (let y = 0; y < canvas.height; y += gridSize) {
-      ctx.fillStyle = "rgba(0,0,0,0.05)";
-      ctx.fillRect(x, y, 2, 2);
+      if (intensity > 0.05) {
+        ctx.fillStyle = `rgba(255,255,255,${intensity * 0.25})`;
+        ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+      }
     }
   }
+}
 
-  const glow = ctx.createRadialGradient(x, y, 0, x, y, radius);
+/* ---------------- RENDER LOOP ---------------- */
 
-  glow.addColorStop(0, theme.glow);
-  glow.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = glow;
+function animate() {
+  drawBackground();
+  drawGrid();
 
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fill();
-});
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+/* ---------------- THEME BUTTON ---------------- */
 
 document.querySelector(".button").addEventListener("click", () => {
   currentThemeIndex++;
@@ -91,6 +90,4 @@ document.querySelector(".button").addEventListener("click", () => {
   }
 
   theme = themes[currentThemeIndex];
-
-  drawBackground();
 });
