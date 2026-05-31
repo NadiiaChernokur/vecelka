@@ -2,6 +2,7 @@ html,
 body {
   margin: 0;
   overflow: hidden;
+  transition: background-color 0.5s;
 }
 .canvas {
   background-color: rgb(198, 113, 113);
